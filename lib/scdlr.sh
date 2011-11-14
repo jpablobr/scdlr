@@ -25,6 +25,10 @@
 # Installation
 # -----------------------
 
+# `git clone https://github.com/jpablobr/scdlr.git`
+
+# `cd scdlr`
+
 # `make && sudo make install`
 
 # Usage

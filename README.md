@@ -9,6 +9,10 @@ downloader that supports resume via `Curl(1)`
 Installation
 ------------
 
+  git clone https://github.com/jpablobr/scdlr.git
+
+  cd scdlr
+
 	make && sudo make install
 
 Usage
