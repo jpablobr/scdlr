@@ -77,6 +77,7 @@ error_exit() {
 # Helpers
 # -------
 
+# Helpers for printing to standard output.
 _print_info() {
     echo "$(tput setaf 2)[I]$(tput op) $1"
 }
@@ -98,6 +99,7 @@ _print_section() {
 }
 
 # Usage
+# -----
 usage() {
 
     echo ''
