@@ -57,11 +57,10 @@ set -e
 #     CODE # http://soundcloud.com/funckarma
 #     ...
 
-# Notice it is also possible to "comment" out DJs that already been
-# downloaded but do not wish to remove it from the list because maybe
-# later on you'll want to re-download their music or just to upload
-# their last songs... `Curl` will handle all the download `resume`
-# functionality.
+# Notice it's also possible to *comment* out DJs that already been
+# downloaded but do not wish to remove them from the list because maybe
+# later on you'll want to re-download their music... Though, `Curl(1)`
+# will handle all the download `resuming` functionality anyway! :).
 ARTISTS_LIST="$SCDLR_PATH/soundcloud.list"
 
 # Program base name.
@@ -130,7 +129,7 @@ USAGE
 # the download list. Later on maybe this should validad if the url is
 # already there and also check if it already has has been downloaded.
 append_to_downloads_list(){
-    echo $what >> $list
+    echo $url >> $ARTISTS_LIST
     tput setaf 4; cat $list; tput op
     exit 0
 }
