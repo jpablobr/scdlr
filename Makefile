@@ -21,8 +21,8 @@ uninstall:
 gh-pages:
 	shocco lib/scdlr.sh >scdlr.sh.html+
 	git checkout -q gh-pages
-	mv scdlr.sh.html+ scdlr.sh.html
-	git add scdlr.sh.html
+	mv scdlr.sh.html+ index.html
+	git add index.html
 	git commit -m "Rebuilt docs."
 	git push origin gh-pages
 	git checkout -q master
