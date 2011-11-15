@@ -105,8 +105,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.</p>
 
 </pre></div></td></tr><tr><td class=docs>
 
-<p>This is the path where all the tracks will be downloaded. It can
-also be set in the environment.</p>
+<p><code>SCDLR_PATH</code> is the path where all the tracks will be downloaded.
+It can also be set in the environment.</p>
 
 </td><td class=code><div class=highlight><pre>
 
@@ -114,7 +114,8 @@ also be set in the environment.</p>
 
 </pre></div></td></tr><tr><td class=docs>
 
-<p>This is the download.list with all the DJs accounts URLs.</p>
+<p>This is the download.list (<code>ARTISTS_LIST</code>) with all the DJs accounts
+URLs.</p>
 
 </td><td class=code><div class=highlight><pre>
 : <span class="k">${</span><span class="nv">SCDLR_PATH</span><span class="p">=</span><span class="s2">&quot;~/Music/Soundcloud&quot;</span><span class="k">}</span>
@@ -132,10 +133,11 @@ CODE # http://soundcloud.com/funckarma
 
 </pre></div></td></tr><tr><td class=docs>
 
-<p>Notice it's also possible to <em>comment</em> out DJs that already been
-downloaded but do not wish to remove them from the list because maybe
-later on you'll want to re-download their music... Though, <code>Curl(1)</code>
-will handle all the download <code>resuming</code> functionality anyway! :).</p>
+<p>Notice it's also possible in the <code>ARTISTS_LIST</code> to <em>comment</em> out DJs
+that already been downloaded but do not wish to remove them from the
+list because maybe later on you'll want to re-download their
+music... Though, <code>Curl(1)</code> will handle all the download <code>resuming</code>
+functionality anyway! :).</p>
 
 </td><td class=code><div class=highlight><pre>
 
@@ -167,7 +169,7 @@ error_exit<span class="o">()</span> <span class="o">{</span>
 
 </pre></div></td></tr><tr><td class=docs>
 
-<p>Helpers for printing to standard output.</p>
+<p>Helpers for printing to <code>standard output</code>.</p>
 
 </td><td class=code><div class=highlight><pre>
 
