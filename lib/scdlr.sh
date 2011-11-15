@@ -45,11 +45,12 @@
 
 set -e
 
-# This is the path where all the tracks will be downloaded. It can
-# also be set in the environment.
+# `SCDLR_PATH` is the path where all the tracks will be downloaded.
+# It can also be set in the environment.
 : ${SCDLR_PATH="~/Music/Soundcloud"}
 
-# This is the download.list with all the DJs accounts URLs.
+# This is the download.list (`ARTISTS_LIST`) with all the DJs accounts
+# URLs.
 
 #     CODE http://soundcloud.com/bassbintwins
 #     CODE http://soundcloud.com/bassnectar
@@ -57,10 +58,11 @@ set -e
 #     CODE # http://soundcloud.com/funckarma
 #     ...
 
-# Notice it's also possible to *comment* out DJs that already been
-# downloaded but do not wish to remove them from the list because maybe
-# later on you'll want to re-download their music... Though, `Curl(1)`
-# will handle all the download `resuming` functionality anyway! :).
+# Notice it's also possible in the `ARTISTS_LIST` to *comment* out DJs
+# that already been downloaded but do not wish to remove them from the
+# list because maybe later on you'll want to re-download their
+# music... Though, `Curl(1)` will handle all the download `resuming`
+# functionality anyway! :).
 ARTISTS_LIST="$SCDLR_PATH/soundcloud.list"
 
 # Program base name.
@@ -77,7 +79,7 @@ error_exit() {
 # Helpers
 # -------
 
-# Helpers for printing to standard output.
+# Helpers for printing to `standard output`.
 _print_info() {
     echo "$(tput setaf 2)[I]$(tput op) $1"
 }

@@ -12,10 +12,11 @@ Just ad the DJs profile URL to the `download.list` as such:
     # http://soundcloud.com/funckarma
     ...
 
-Notice it's also possible to *comment* out DJs that already been
-downloaded but do not wish to remove them from the list because maybe
-later on you'll want to re-download their music... Though, `Curl(1)`
-will handle all the download `resuming` functionality anyway! :).
+Notice it's also possible in the `ARTISTS_LIST` to *comment* out DJs
+that already been downloaded but do not wish to remove them from the
+list because maybe later on you'll want to re-download their
+music... Though, `Curl(1)` will handle all the download `resuming`
+functionality anyway! :).
 
 ![scdlr](https://github.com/jpablobr/scdlr/raw/master/scdlr.png)
 
