@@ -132,11 +132,10 @@ CODE # http://soundcloud.com/funckarma
 
 </pre></div></td></tr><tr><td class=docs>
 
-<p>Notice it is also possible to "comment" out DJs that already been
-downloaded but do not wish to remove it from the list because maybe
-later on you'll want to re-download their music or just to upload
-their last songs... <code>Curl</code> will handle all the download <code>resume</code>
-functionality.</p>
+<p>Notice it's also possible to <em>comment</em> out DJs that already been
+downloaded but do not wish to remove them from the list because maybe
+later on you'll want to re-download their music... Though, <code>Curl(1)</code>
+will handle all the download <code>resuming</code> functionality anyway! :).</p>
 
 </td><td class=code><div class=highlight><pre>
 
@@ -234,7 +233,7 @@ usage<span class="o">()</span> <span class="o">{</span>
 
 </td><td class=code><div class=highlight><pre>
 append_to_downloads_list<span class="o">(){</span>
-    <span class="nb">echo</span> <span class="nv">$what</span> &gt;&gt; <span class="nv">$list</span>
+    <span class="nb">echo</span> <span class="nv">$url</span> &gt;&gt; <span class="nv">$ARTISTS_LIST</span>
     tput setaf 4; cat <span class="nv">$list</span>; tput op
     <span class="nb">exit </span>0
 <span class="o">}</span>
