@@ -134,7 +134,7 @@ USAGE
 # already there and also check if it already has has been downloaded.
 append_to_downloads_list(){
     echo $url >> $ARTISTS_LIST
-    tput setaf 4; cat $list; tput op
+    tput setaf 4; cat $ARTISTS_LIST; tput op
     exit 0
 }
 
