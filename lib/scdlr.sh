@@ -130,12 +130,12 @@ USAGE
 [ "$#" -lt 1 ] && usage
 
 # If a URL is supplied given via the `-a` argument it will be added to
-# the download list. Later on maybe this should validad if the url is
+# the download list. Later on maybe this should validate if the url is
 # already there and also check if it already has has been downloaded.
 append_to_downloads_list(){
     echo $url >> $ARTISTS_LIST
     tput setaf 4; cat $ARTISTS_LIST; tput op
-    exit 0
+    exit
 }
 
 # Process each of the DJs URLs to download all their tracks.
@@ -156,7 +156,7 @@ download_tracks(){
     _print_info "Found $pages pages of songs!"
 
     # `curl` to identify the amount of pages in order to build the
-    # indiviual URLs.
+    # individual URLs.
     for page in $(seq 1 ${pages}); do
 
     if [ "$pages" = "1" ]; then
@@ -218,7 +218,7 @@ start_downloads(){
     done && exit 0
 }
 
-# Parce the user options.
+# Parse the user options.
 #
 # `-s` will parse the whole download.list and start processing each of
 # the DJs accounts
