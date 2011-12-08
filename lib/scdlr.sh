@@ -158,38 +158,42 @@ download_tracks(){
     # `curl` to identify the amount of pages in order to build the
     # individual URLs.
     for page in $(seq 1 ${pages}); do
+        if [ "$pages" = "1" ]; then
+	          this=$(curl -s --user-agent 'Mozilla/5.0' $1)
+        else
+	          this=$(curl -s --user-agent 'Mozilla/5.0' $1/tracks?page=$page)
+        fi
 
-    if [ "$pages" = "1" ]; then
-	      this=$(curl -s --user-agent 'Mozilla/5.0' $1)
-    else
-	      this=$(curl -s --user-agent 'Mozilla/5.0' $1/tracks?page=$page)
-    fi
+        songs=$(echo "$this"                          |
+            grep 'streamUrl'                          |
+            tr '"' "\n"                               |
+            grep 'http://media.soundcloud.com/stream/')
 
-        songs=$(echo "$this"                             |
-               grep 'streamUrl'                          |
-               tr '"' "\n"                               |
-               grep 'http://media.soundcloud.com/stream/')
+        songcount=$(echo "$songs"                     |
+            wc -l)
 
-        songcount=$(echo "$songs"                        |
-                    wc -l)
-
-        titles=$(echo "$this"                            |
-                grep 'title":"'                          |
-                tr ',' "\n"                              |
-                grep 'title'                             |
-                cut -d '"' -f 4)
+        titles=$(echo "$this"                        |
+            grep 'title":"'                          |
+            tr ',' "\n"                              |
+            grep 'title'                             |
+            cut -d '"' -f 4)
 
         if [ -z "$songs" ]; then
 	          _print_error "No song found at $1/tracks?page=$page." && error_exit
         fi
 
-        _print_info "Downloading $songcount songs from page $page..."
+        _print_info "Downloading $songcount songs from page $page."
 
         # Build the URL and `curl` it
         for songid in $(seq 1 ${songcount}); do
 	          title=$(echo "$titles" | sed -n "$songid"p)
 	          url=$(echo "$songs" | sed -n "$songid"p)
-	          curl  -C - -s -L --user-agent 'Mozilla/5.0' -o "$title.mp3" "$url";
+            # Since (and for good messure) the script uses `set -e` it will
+            # exit on error exit status. The problem is that soundcloud do not
+            # support byte ranges which makes `curl` exit with a 33 error
+            # forcing the script to terminate. The `|| true` statment will
+            # allow the script to continue to download the rest of the songs.
+	          curl -C - -s -L --user-agent 'Mozilla/5.0' -o "$title.mp3" "$url" || true
             _print_info "Track $title downloaded with an exit status of: $?"
         done
     done
@@ -198,12 +202,14 @@ download_tracks(){
 # Parse the download.list to create a directory for each of the DJs
 # (so they can be kept organized).
 start_downloads(){
-    cat $ARTISTS_LIST | while read LINE; do
-        # To keep the URLs in the `$download_list` and not have to
-        # delete them.
-        echo $LINE | grep -q '^#' && break
-        new_dir=$(echo $LINE | sed -e 's/.*\///g')
-        cd $SCDLR_PATH
+    while read url; do
+        # Check for # in order to label the url as commented out.
+        # Help to keep URLs in `$download_list` without having to delete them.
+        echo "$url" | grep -q '^#' && break
+
+        cd $SCDLR_PATH || error_exit
+
+        new_dir=$(echo "$url" | sed -e 's/.*\///g')
 
         if [ -d $SCDLR_PATH/$new_dir ]; then
             # Curl will determine if the tracks have been downloaded
@@ -214,8 +220,9 @@ start_downloads(){
             mkdir "./$new_dir" && cd "./$new_dir"
         fi
         _print_section "Downloading tracks from $new_dir"
-            download_tracks "$LINE"
-    done && exit
+            download_tracks "$url"
+    done < $ARTISTS_LIST
+    exit
 }
 
 # Parse the user options.
