@@ -215,7 +215,7 @@ start_downloads(){
         fi
         _print_section "Downloading tracks from $new_dir"
             download_tracks "$LINE"
-    done && exit 0
+    done && exit
 }
 
 # Parse the user options.
