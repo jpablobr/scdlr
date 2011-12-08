@@ -193,7 +193,7 @@ download_tracks(){
             # support byte ranges which makes `curl` exit with a 33 error
             # forcing the script to terminate. The `|| true` statment will
             # allow the script to continue to download the rest of the songs.
-	          curl -C - -s -L --user-agent 'Mozilla/5.0' -o "$title.mp3" "$url" || true
+	          curl -C - -L --user-agent 'Mozilla/5.0' -o "$title.mp3" "$url" || true
             _print_info "Track $title downloaded with an exit status of: $?"
         done
     done
