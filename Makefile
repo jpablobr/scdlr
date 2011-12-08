@@ -19,8 +19,8 @@ uninstall:
 	rm -f $(DESTDIR)$(libdir)/scdlr.sh
 
 gh-pages:
-	shocco lib/scdlr.sh >scdlr.sh.html+
 	git checkout -q gh-pages
+	shocco lib/scdlr.sh >scdlr.sh.html+
 	mv scdlr.sh.html+ index.html
 	git add index.html
 	git commit -m "Rebuilt docs."
