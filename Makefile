@@ -20,8 +20,6 @@ uninstall:
 
 shocco:
 	shocco lib/scdlr.sh >scdlr.sh.html+
-	git add scdlr.sh.html+
-	git commit -m "Rebuilt docs."
 
 gh-pages:
 	git checkout -q gh-pages
