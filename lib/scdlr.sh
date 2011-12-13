@@ -45,9 +45,12 @@
 
 set -e
 
+# Program base name.
+PROGNAME=$(basename $0)
+
 # `SCDLR_PATH` is the path where all the tracks will be downloaded.
 # It can also be set in the environment.
-: ${SCDLR_PATH="~/Music/Soundcloud"}
+: ${SCDLR_PATH='~/Music/Soundcloud'}
 
 # This is the download.list (`ARTISTS_LIST`) with all the DJs accounts
 # URLs.
@@ -65,12 +68,9 @@ set -e
 # functionality anyway! :).
 ARTISTS_LIST="$SCDLR_PATH/soundcloud.list"
 
-# Program base name.
-PROGNAME=$(basename $0)
-
 # Function for exit due to fatal program error
 #	string containing descriptive error message
-error_exit() {
+error_exit () {
 	local	err_msg="${exe} ${1}"
 	echo ${err_msg} >&2
 	exit 1
@@ -80,34 +80,34 @@ error_exit() {
 # -------
 
 # Helpers for printing to `standard output`.
-_print_info() {
+_print_info () {
     echo "$(tput setaf 2)[I]$(tput op) $1"
 }
 
-_print_error() {
+_print_error () {
     echo "$(tput setaf 1)[E]$(tput op) $1"
 }
 
-_print_warning() {
+_print_warning () {
     echo "$(tput setaf 3)[W]$(tput op) $1"
 }
 
-_print_help() {
+_print_help () {
     echo "$(tput setaf 7)[H]$(tput op) $1"
 }
 
-_print_section() {
-    echo ''; echo "$(tput setaf 5)###$(tput op) $1"; echo ''
+_print_section () {
+    echo; echo "$(tput setaf 5)###$(tput op) $1"; echo
 }
 
 # Usage
 # -----
-usage() {
+usage () {
 
-    echo ''
+    echo
     _print_info " usage: ${PROGNAME} [-a or -s] [URL]"
 
-    cat 1>&2 <<-USAGE
+    cat 1>&2 <<USAGE
 
 Examples:
     # Append a URL to the download.list
@@ -132,14 +132,14 @@ USAGE
 # If a URL is supplied given via the `-a` argument it will be added to
 # the download list. Later on maybe this should validate if the url is
 # already there and also check if it already has has been downloaded.
-append_to_downloads_list(){
+append_to_downloads_list () {
     echo $url >> $ARTISTS_LIST
     tput setaf 4; cat $ARTISTS_LIST; tput op
     exit
 }
 
 # Process each of the DJs URLs to download all their tracks.
-download_tracks(){
+download_tracks () {
    # Amount of pages the DJ has in his profile. Will also be used
    # in the `download_by_artist` function to *crawl* his account.
     pages=$(curl -s --user-agent 'Mozilla/5.0' "$1/tracks" |
@@ -200,12 +200,12 @@ download_tracks(){
 }
 
 # Parse the download.list to create a directory for each of the DJs
-# (so they can be kept organized).
-start_downloads(){
+# (to keep them organized).
+start_downloads () {
     while read url; do
         # Check for # in order to label the url as commented out.
         # Help to keep URLs in `$download_list` without having to delete them.
-        echo "$url" | grep -q '^#' && break
+        echo "$url" | grep -q '^#' && continue
 
         cd $SCDLR_PATH || error_exit
 
