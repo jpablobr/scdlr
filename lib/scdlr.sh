@@ -69,11 +69,11 @@ PROGNAME=$(basename $0)
 ARTISTS_LIST="$SCDLR_PATH/soundcloud.list"
 
 # Function for exit due to fatal program error
-#	string containing descriptive error message
+# string containing descriptive error message
 error_exit () {
-	local	err_msg="${exe} ${1}"
-	echo ${err_msg} >&2
-	exit 1
+    local err_msg="${exe} ${1}"
+    echo ${err_msg} >&2
+    exit 1
 }
 
 # Helpers
@@ -103,24 +103,21 @@ _print_section () {
 # Usage
 # -----
 usage () {
+    echo; _print_info " usage: ${PROGNAME} [-a or -s] [URL]"
 
-    echo
-    _print_info " usage: ${PROGNAME} [-a or -s] [URL]"
-
-    cat 1>&2 <<USAGE
-
+    cat <<USAGE
 Examples:
-    # Append a URL to the download.list
-    ${PROGNAME} -a URL
+# Append a URL to the download.list
+${PROGNAME} -a URL
 
-    # Download all URLs on the download.list
-    ${PROGNAME} -s
+# Download all URLs on the download.list
+${PROGNAME} -s
 
 Download list path:
 $(tput setaf 2)${ARTISTS_LIST}$(tput op)
 
 See also:
-    curl(1)
+curl(1)
 USAGE
 
     error_exit
@@ -133,7 +130,7 @@ USAGE
 # the download list. Later on maybe this should validate if the url is
 # already there and also check if it already has has been downloaded.
 append_to_downloads_list () {
-    echo $url >> $ARTISTS_LIST
+    echo $url >>$ARTISTS_LIST
     tput setaf 4; cat $ARTISTS_LIST; tput op
     exit
 }
@@ -143,14 +140,14 @@ download_tracks () {
    # Amount of pages the DJ has in his profile. Will also be used
    # in the `download_by_artist` function to *crawl* his account.
     pages=$(curl -s --user-agent 'Mozilla/5.0' "$1/tracks" |
-           tr '"' "\n" |
-           grep "tracks?page=" |
-           sort -u |
-           tail -n 1 |
-           cut -d "=" -f 2)
+        tr '"' "\n" |
+        grep "tracks?page=" |
+        sort -u |
+        tail -n 1 |
+        cut -d "=" -f 2)
 
     if [ -z "$pages" ]; then
-	     pages=1
+        pages=1
     fi
 
     _print_info "Found $pages pages of songs!"
@@ -159,9 +156,9 @@ download_tracks () {
     # individual URLs.
     for page in $(seq 1 ${pages}); do
         if [ "$pages" = "1" ]; then
-	          this=$(curl -s --user-agent 'Mozilla/5.0' $1)
+            this=$(curl -s --user-agent 'Mozilla/5.0' $1)
         else
-	          this=$(curl -s --user-agent 'Mozilla/5.0' $1/tracks?page=$page)
+            this=$(curl -s --user-agent 'Mozilla/5.0' $1/tracks?page=$page)
         fi
 
         songs=$(echo "$this"                          |
@@ -172,28 +169,28 @@ download_tracks () {
         songcount=$(echo "$songs"                     |
             wc -l)
 
-        titles=$(echo "$this"                        |
-            grep 'title":"'                          |
-            tr ',' "\n"                              |
-            grep 'title'                             |
+        titles=$(echo "$this"                         |
+            grep 'title":"'                           |
+            tr ',' "\n"                               |
+            grep 'title'                              |
             cut -d '"' -f 4)
 
         if [ -z "$songs" ]; then
-	          _print_error "No song found at $1/tracks?page=$page." && error_exit
+            _print_error "No song found at $1/tracks?page=$page." && error_exit
         fi
 
         _print_info "Downloading $songcount songs from page $page."
 
         # Build the URL and `curl` it
         for songid in $(seq 1 ${songcount}); do
-	          title=$(echo "$titles" | sed -n "$songid"p)
-	          url=$(echo "$songs" | sed -n "$songid"p)
+            title=$(echo "$titles" | sed -n "$songid"p)
+            url=$(echo "$songs" | sed -n "$songid"p)
             # Since (and for good messure) the script uses `set -e` it will
             # exit on error exit status. The problem is that soundcloud do not
             # support byte ranges which makes `curl` exit with a 33 error
             # forcing the script to terminate. The `|| true` statment will
             # allow the script to continue to download the rest of the songs.
-	          curl -C - -L --user-agent 'Mozilla/5.0' -o "$title.mp3" "$url" || true
+            curl -C - -L --user-agent 'Mozilla/5.0' -o "$title.mp3" "$url" || true
             _print_info "Track $title downloaded with an exit status of: $?"
         done
     done
@@ -203,8 +200,9 @@ download_tracks () {
 # (to keep them organized).
 start_downloads () {
     while read url; do
-        # Check for # in order to label the url as commented out.
-        # Help to keep URLs in `$download_list` without having to delete them.
+        # Check for # char in order to label the url as commented out.
+        # Help to keep URLs in `$download_list` without having to
+        # delete them.
         echo "$url" | grep -q '^#' && continue
 
         cd $SCDLR_PATH || error_exit
@@ -212,7 +210,7 @@ start_downloads () {
         new_dir=$(echo "$url" | sed -e 's/.*\///g')
 
         if [ -d $SCDLR_PATH/$new_dir ]; then
-            # Curl will determine if the tracks have been downloaded
+            # Curl will determine if the tracks has been downloaded.
             cd "./$new_dir"
             _print_info "Changing directory to: $new_dir"
         else
@@ -220,22 +218,32 @@ start_downloads () {
             mkdir "./$new_dir" && cd "./$new_dir"
         fi
         _print_section "Downloading tracks from $new_dir"
-            download_tracks "$url"
-    done < $ARTISTS_LIST
+        download_tracks "$url"
+    done <$ARTISTS_LIST
     exit
 }
 
-# Parse the user options.
+# User options:
 #
-# `-s` will parse the whole download.list and start processing each of
-# the DJs accounts
+# `-s` will parse the download.list and start processing each of the
+# DJs accounts.
 
 # `-a` will require a DJ account URL and it will be added to the
 # download.list.
-if echo "$1" | grep -q "^-a" && [ "$2" ]; then
-    shift;  url="$1"; shift && append_to_download_list
-elif echo "$1" | grep -q "^-s"; then
-    start_downloads
-else
-    usage
+
+if [ "$1" = "--help" ]; then
+    helptext
 fi
+
+while getopts "a:s" opt; do
+    case $opt in
+        a ) append_to_download_list  $OPTARG
+            ;;
+        s ) start_downloads
+            ;;
+        h ) helptext
+            ;;
+        * ) usage
+            exit 1
+    esac
+done;:

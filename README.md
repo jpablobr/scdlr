@@ -9,11 +9,11 @@ downloader that supports resume via `Curl(1)`
 Installation
 ------------
 
-        git clone https://github.com/jpablobr/scdlr.git
+git clone https://github.com/jpablobr/scdlr.git
 
-        cd scdlr
+cd scdlr
 
-        make && sudo make install
+make && sudo make install
 
 Usage
 -----
@@ -22,22 +22,22 @@ From the command-line:
 
 Append a URL to the download.list
 
-        scdlr.sh -a URL
+scdlr.sh -a URL
 
 Download all URLs on the download.list
 
-        scdlr.sh -s
+scdlr.sh -s
 
 Download.list
 -------------
 
 Just ad the DJs profile URL to the `download.list` as such:
 
-    http://soundcloud.com/bassbintwins
-    http://soundcloud.com/bassnectar
-    # http://soundcloud.com/dirty-talk
-    # http://soundcloud.com/funckarma
-    ...
+http://soundcloud.com/bassbintwins
+http://soundcloud.com/bassnectar
+# http://soundcloud.com/dirty-talk
+# http://soundcloud.com/funckarma
+...
 
 Notice it's also possible in the `ARTISTS_LIST` to *comment* out DJs
 that already been downloaded but do not wish to remove them from the
