@@ -139,7 +139,7 @@ append_to_downloads_list () {
 download_tracks () {
    # Amount of pages the DJ has in his profile. Will also be used
    # in the `download_by_artist` function to *crawl* his account.
-    pages=$(curl -s --user-agent 'Mozilla/5.0' "$1/tracks" |
+    local pages=$(curl -s --user-agent 'Mozilla/5.0' "$1/tracks" |
         tr '"' "\n" |
         grep "tracks?page=" |
         sort -u |
@@ -161,15 +161,15 @@ download_tracks () {
             this=$(curl -s --user-agent 'Mozilla/5.0' $1/tracks?page=$page)
         fi
 
-        songs=$(echo "$this"                          |
+        local songs=$(echo "$this"                          |
             grep 'streamUrl'                          |
             tr '"' "\n"                               |
             grep 'http://media.soundcloud.com/stream/')
 
-        songcount=$(echo "$songs"                     |
+        local songcount=$(echo "$songs"                     |
             wc -l)
 
-        titles=$(echo "$this"                         |
+        local titles=$(echo "$this"                         |
             grep 'title":"'                           |
             tr ',' "\n"                               |
             grep 'title'                              |
@@ -183,7 +183,19 @@ download_tracks () {
 
         # Build the URL and `curl` it
         for songid in $(seq 1 ${songcount}); do
-            title=$(echo "$titles" | sed -n "$songid"p)
+            title=$(echo -e "$titles" |
+                sed -n "$songid"p     |
+                tr ' ' '_'            |
+                tr -d '[{}(),\\!;:#+*]' |
+                tr -d "\'"            |
+                tr '[A-Z]' '[a-z]'    |
+                sed -e 's:.*/::'      \
+                    -e 's/[-\.]/_/g'  \
+                    -e 's:[_]\+:_:g'  \
+                    -e 's:&amp::g'    \
+                    -e 's:&quot::g'   \
+                    -e 's:-[0-9].*::' )
+
             url=$(echo "$songs" | sed -n "$songid"p)
             # Since (and for good messure) the script uses `set -e` it will
             # exit on error exit status. The problem is that soundcloud do not
@@ -237,7 +249,7 @@ fi
 
 while getopts "a:s" opt; do
     case $opt in
-        a ) append_to_download_list  $OPTARG
+        a ) append_to_download_list $OPTARG
             ;;
         s ) start_downloads
             ;;
