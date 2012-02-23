@@ -50,7 +50,7 @@ PROGNAME=$(basename $0)
 
 # `SCDLR_PATH` is the path where all the tracks will be downloaded.
 # It can also be set in the environment.
-: ${SCDLR_PATH='~/Music/Soundcloud'}
+SCDLR_PATH=${SCDLR_PATH:-'~/Music/Soundcloud'}
 
 # This is the download.list (`ARTISTS_LIST`) with all the DJs accounts
 # URLs.
@@ -70,9 +70,9 @@ ARTISTS_LIST="$SCDLR_PATH/soundcloud.list"
 
 # Function for exit due to fatal program error
 # string containing descriptive error message
-error_exit () {
-    local err_msg="${exe} ${1}"
-    echo ${err_msg} >&2
+die() {
+    local err_msg="${PROGNAME} ${1}"
+    _print_error ${err_msg} >&2
     exit 1
 }
 
@@ -81,46 +81,46 @@ error_exit () {
 
 # Helpers for printing to `standard output`.
 _print_info () {
-    echo "$(tput setaf 2)[I]$(tput op) $1"
+    printf "$(tput setaf 2)[I]$(tput op) $1\n" >&2
 }
 
 _print_error () {
-    echo "$(tput setaf 1)[E]$(tput op) $1"
+    printf "$(tput setaf 1)[E]$(tput op) $1\n" >&2
 }
 
 _print_warning () {
-    echo "$(tput setaf 3)[W]$(tput op) $1"
+    printf "$(tput setaf 3)[W]$(tput op) $1\n" >&2
 }
 
 _print_help () {
-    echo "$(tput setaf 7)[H]$(tput op) $1"
+    printf "$(tput setaf 7)[H]$(tput op) $1\n" >&2
 }
 
 _print_section () {
-    echo; echo "$(tput setaf 5)###$(tput op) $1"; echo
+    printf "\n$(tput setaf 5)###$(tput op) $1\n" >&2
 }
 
 # Usage
 # -----
-usage () {
+usage() {
     echo; _print_info " usage: ${PROGNAME} [-a or -s] [URL]"
 
     cat <<USAGE
-Examples:
-# Append a URL to the download.list
-${PROGNAME} -a URL
+    Examples:
+    # Append a URL to the download.list
+    ${PROGNAME} -a URL
 
-# Download all URLs on the download.list
-${PROGNAME} -s
+    # Download all URLs on the download.list
+    ${PROGNAME} -s
 
-Download list path:
-$(tput setaf 2)${ARTISTS_LIST}$(tput op)
+    Download list path:
+    $(tput setaf 2)${ARTISTS_LIST}$(tput op)
 
-See also:
-curl(1)
+    See also:
+    curl(1)
 USAGE
 
-    error_exit
+    die
 }
 
 # Validate that at least one argument is provided.
@@ -129,73 +129,92 @@ USAGE
 # If a URL is supplied given via the `-a` argument it will be added to
 # the download list. Later on maybe this should validate if the url is
 # already there and also check if it already has has been downloaded.
-append_to_downloads_list () {
+append_to_downloads_list() {
     echo $url >>$ARTISTS_LIST
     tput setaf 4; cat $ARTISTS_LIST; tput op
     exit
 }
 
+artist_pages() {
+    curl -s --user-agent 'Mozilla/5.0' "$1/tracks" |
+    grep "tracks?page="                            |
+    tr '=' '\n'                                    |
+    sed 's/[^1-9>]//g'                             |
+    tr '>' '\n'                                    |
+    sort -u                                        |
+    tail -1
+}
+
+artist_songs() {
+    echo "$1"        |
+    grep 'streamUrl' |
+    tr '"' "\n"      |
+    grep 'http://media.soundcloud.com/stream/'
+
+}
+
+artist_song_count() {
+    echo $1 | wc -l
+}
+
+song_titles() {
+    echo "$1"       |
+    grep 'title":"' |
+    tr ',' "\n"     |
+    grep 'title'    |
+    cut -d '"' -f 4
+}
+
+song_title(){
+    echo -e "$1"            |
+    sed -n "$2"p            |
+    tr ' ' '_'              |
+    tr -d '[{}(),\\!;:#+*]' |
+    tr -d "\'"              |
+    tr '[A-Z]' '[a-z]'      |
+    sed -e 's:.*/::'        \
+        -e 's/[-\.]/_/g'    \
+        -e 's:[_]\+:_:g'    \
+        -e 's:&amp::g'      \
+        -e 's:&quot::g'     \
+        -e 's:-[0-9].*::'
+}
+
+artist_page_count(){
+    if [ "$1" = "1" ]; then
+        curl -s --user-agent 'Mozilla/5.0' "$2"
+    else
+        curl -s --user-agent 'Mozilla/5.0' "$2/tracks?page=$3"
+    fi
+}
+
 # Process each of the DJs URLs to download all their tracks.
-download_tracks () {
+download_tracks() {
    # Amount of pages the DJ has in his profile. Will also be used
    # in the `download_by_artist` function to *crawl* his account.
-    local pages=$(curl -s --user-agent 'Mozilla/5.0' "$1/tracks" |
-        tr '"' "\n" |
-        grep "tracks?page=" |
-        sort -u |
-        tail -n 1 |
-        cut -d "=" -f 2)
 
-    if [ -z "$pages" ]; then
-        pages=1
-    fi
+    pages=$(artist_pages "$1")
+
+    [ -z "$pages" ] && pages=1
 
     _print_info "Found $pages pages of songs!"
 
     # `curl` to identify the amount of pages in order to build the
     # individual URLs.
-    for page in $(seq 1 ${pages}); do
-        if [ "$pages" = "1" ]; then
-            this=$(curl -s --user-agent 'Mozilla/5.0' $1)
-        else
-            this=$(curl -s --user-agent 'Mozilla/5.0' $1/tracks?page=$page)
-        fi
+    for page in $(seq 1 $pages); do
 
-        local songs=$(echo "$this"                          |
-            grep 'streamUrl'                          |
-            tr '"' "\n"                               |
-            grep 'http://media.soundcloud.com/stream/')
+        this=$(artist_page_count "$pages" "$1" "$page")
+        songs=$(artist_songs "$this")
+        songcount=$(artist_song_count $songs)
+        titles=$(song_titles "$this")
 
-        local songcount=$(echo "$songs"                     |
-            wc -l)
-
-        local titles=$(echo "$this"                         |
-            grep 'title":"'                           |
-            tr ',' "\n"                               |
-            grep 'title'                              |
-            cut -d '"' -f 4)
-
-        if [ -z "$songs" ]; then
-            _print_error "No song found at $1/tracks?page=$page." && error_exit
-        fi
+        [ -z "$songs" ] && die "No song found at $1/tracks?page=$page."
 
         _print_info "Downloading $songcount songs from page $page."
 
         # Build the URL and `curl` it
         for songid in $(seq 1 ${songcount}); do
-            title=$(echo -e "$titles" |
-                sed -n "$songid"p     |
-                tr ' ' '_'            |
-                tr -d '[{}(),\\!;:#+*]' |
-                tr -d "\'"            |
-                tr '[A-Z]' '[a-z]'    |
-                sed -e 's:.*/::'      \
-                    -e 's/[-\.]/_/g'  \
-                    -e 's:[_]\+:_:g'  \
-                    -e 's:&amp::g'    \
-                    -e 's:&quot::g'   \
-                    -e 's:-[0-9].*::' )
-
+            title=$(song_title "$titles" "$songid")
             url=$(echo "$songs" | sed -n "$songid"p)
             # Since (and for good messure) the script uses `set -e` it will
             # exit on error exit status. The problem is that soundcloud do not
@@ -210,14 +229,14 @@ download_tracks () {
 
 # Parse the download.list to create a directory for each of the DJs
 # (to keep them organized).
-start_downloads () {
+start_downloads() {
     while read url; do
         # Check for # char in order to label the url as commented out.
         # Help to keep URLs in `$download_list` without having to
         # delete them.
         echo "$url" | grep -q '^#' && continue
 
-        cd $SCDLR_PATH || error_exit
+        cd $SCDLR_PATH || die
 
         new_dir=$(echo "$url" | sed -e 's/.*\///g')
 
@@ -243,9 +262,7 @@ start_downloads () {
 # `-a` will require a DJ account URL and it will be added to the
 # download.list.
 
-if [ "$1" = "--help" ]; then
-    helptext
-fi
+[ "$1" = "--help" ] && usage
 
 while getopts "a:s" opt; do
     case $opt in
@@ -258,4 +275,4 @@ while getopts "a:s" opt; do
         * ) usage
             exit 1
     esac
-done;:
+done
